@@ -1,0 +1,4 @@
+
+main = do
+    putStrnLn "CashFlow"
+
