@@ -1,4 +1,4 @@
 
 main = do
-    putStrnLn "CashFlow"
+    putStrLn "CashFlow"
 
