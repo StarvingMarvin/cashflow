@@ -1,14 +1,11 @@
 
-module Main where
+import qualified Data.Time.Clock as T
+import qualified Data.Time.Calendar as Cal
+import Cashflow.Data
+import Cashflow.Parser
 
-import System.Environment( getArgs )
-import Cashflow.Data.Entry
-
--- |Cashflow application
-main :: IO()
 main = do
-    args <- getArgs
-    case length args of
-        1 -> putStrLn $ head args
-        _ -> putStrLn "Expected input file as argument"
+    utc <- T.getCurrentTime
+    let day = T.utctDay utc
+    putStrLn $ "CashFlow " ++ Cal.showGregorian day
 
