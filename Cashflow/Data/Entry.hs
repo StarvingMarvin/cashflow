@@ -22,9 +22,12 @@ data Expence = Expence {
         expenceTentative    :: Bool
     } deriving (Show)
 
-data MonthlyExpence = MonthlyExpence Entry deriving (Show)
+newtype MonthlyExpence = MonthlyExpence { monthlyExpenceEntry :: Entry } 
+    deriving (Show)
 
-data Income = Income Entry deriving (Show)
+newtype Income = Income { incomeEntry :: Entry } deriving (Show)
+
+newtype Asset = Asset { assetEntry :: Entry } deriving (Show)
 
 data Debt = Debt {
         debtEntry       :: Entry,
@@ -44,10 +47,13 @@ instance SpecificEntry Expence where
     entry = expenceEntry
 
 instance SpecificEntry MonthlyExpence where
-    entry (MonthlyExpence e) = e
+    entry = monthlyExpenceEntry
 
 instance SpecificEntry Income where
-    entry (Income e) = e
+    entry = incomeEntry
+
+instance SpecificEntry Asset where
+    entry = assetEntry
 
 instance SpecificEntry Debt where
     entry = debtEntry
