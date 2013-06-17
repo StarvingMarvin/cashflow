@@ -11,7 +11,7 @@ ws :: P.Parser String
 ws = many (P.oneOf " \t,")
 
 newLine :: P.Parser String
-newLine = P.many1 (P.oneOf "\r\n")
+newLine = P.many1 (P.oneOf "\r\n#")
 
 int ::  P.Parser Int
 int = read <$> P.many1 P.digit
@@ -30,6 +30,9 @@ tentativeMonth = P.option (True, D.Dec) $
 lexeme :: P.Parser a -> P.Parser a
 lexeme p = ws *> p <* ws
 
+parseLine :: P.Parser a -> P.Parser a
+parseLine p = p <* newLine 
+
 description :: P.Parser String
 description = ws *> many (P.noneOf "\n\r\t:#") <* P.char ':'
 
@@ -39,18 +42,24 @@ sectionName = P.char '[' *> many (P.noneOf "\n\r\t[]#") <* P.char ']'
 entry :: P.Parser D.Entry
 entry = D.Entry <$> description <*> lexeme int
 
-entryLine :: P.Parser D.Entry
-entryLine = entry <* newLine 
+monthlyExpence :: P.Parser D.MonthlyExpence
+monthlyExpence = D.MonthlyExpence <$> entry
+
+income :: P.Parser D.Income
+income = D.Income <$> entry
+
+asset :: P.Parser D.Asset
+asset = D.Asset <$> entry
+
+projection :: P.Parser D.Projection
+projection = D.Projection <$> entry <*> lexeme month
 
 expence :: P.Parser D.Expence
-expence = do
-    ee <- entry
-    (tent, m) <- tentativeMonth
-    return D.Expence {
-        D.expenceEntry=ee, 
-        D.expenceMonth=m,
-        D.expenceTentative=tent
-        }
+expence = exp <$> entry <*> tentativeMonth
+    where exp = \e (t, m) -> D.Expence e m t
+
+debt :: P.Parser D.Debt
+debt = D.Debt <$> entry <*> pure "creditor" <*> lexeme month <*> lexeme int
 
 comment :: P.Parser String
 comment = P.char '#' *> many (P.noneOf "\n\r") 

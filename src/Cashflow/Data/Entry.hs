@@ -36,11 +36,18 @@ data Debt = Debt {
         debtInstalments :: Int
     } deriving (Show)
 
+data Projection = Projection {
+        projectionEntry :: Entry,
+        projectionMonth :: Month
+    } deriving (Show)
+
 data Entries = Entries {
         expenceEntries        :: [Expence],
         monthlyExpenceEntries :: [MonthlyExpence],
         incomeEntries         :: [Income],
-        debtEntries           :: [Debt]
+        debtEntries           :: [Debt],
+        assetEntries          :: [Asset],
+        projectionEntries     :: [Projection]
     }
 
 instance SpecificEntry Expence where
@@ -57,6 +64,9 @@ instance SpecificEntry Asset where
 
 instance SpecificEntry Debt where
     entry = debtEntry
+
+instance SpecificEntry Projection where
+    entry = projectionEntry
 
 entrySum :: (SpecificEntry a) => [a] -> Int
 entrySum = foldl (\acc -> (acc +) . entryAmmount . entry) 0

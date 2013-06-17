@@ -9,3 +9,4 @@ main = do
     let day = T.utctDay utc
     putStrLn $ "CashFlow " ++ Cal.showGregorian day
 
+
