@@ -1,110 +1,109 @@
-module Cashflow.Parser {- (
+module Cashflow.Parser (
     parseFile
-) -} where
+) where
 
-import qualified Text.ParserCombinators.Parsec as P
+import qualified Text.Parsec as P
+import qualified Text.Parsec.String as PS
 import Control.Applicative 
 import Data.Monoid
 
 import qualified Cashflow.Data as D
 
-ws :: P.Parser String
+ws :: PS.Parser String
 ws = many (P.oneOf " \t,")
 
-newLine :: P.Parser String
+newLine :: PS.Parser String
 newLine = P.many1 (P.oneOf "\r\n")
 
-(<||>) :: P.Parser a -> P.Parser a -> P.Parser a
+(<||>) :: PS.Parser a -> PS.Parser a -> PS.Parser a
 p <||> q = P.try p <|> q
 
-lexeme :: P.Parser a -> P.Parser a
+lexeme :: PS.Parser a -> PS.Parser a
 lexeme p = p <* ws
 
-emptyLines :: P.Parser [String]
+emptyLines :: PS.Parser [String]
 emptyLines = many ((P.many1 $ P.oneOf " \r\n") <|> comment)
 
-parseLine :: P.Parser a -> P.Parser a
-parseLine p = {- emptyLines *> -} lexeme p <* emptyLines --(newLine <|> comment)
+parseLine :: PS.Parser a -> PS.Parser a
+parseLine p = lexeme p <* emptyLines
 
-int ::  P.Parser Int
+int ::  PS.Parser Int
 int = read <$> P.many1 P.digit
 
-month :: P.Parser D.Month
+month :: PS.Parser D.Month
 month = fmap read . foldr1 (<|>) $ 
     map (P.try . P.string . show) [D.Jan ..] 
 
-tentative :: P.Parser Bool
+tentative :: PS.Parser Bool
 tentative = P.option False $ P.char '~' *> pure True
 
-tentativeMonth :: P.Parser (Bool, D.Month)
+tentativeMonth :: PS.Parser (Bool, D.Month)
 tentativeMonth = P.option (True, D.Dec) $
                     (,) <$> tentative <*> month
 
-description :: P.Parser String
+description :: PS.Parser String
 description = many (P.noneOf "\n\r\t:#[]") <* P.char ':'
 
-sectionName :: P.Parser String
+sectionName :: PS.Parser String
 sectionName = P.char '[' *> many (P.noneOf "\n\r\t[]#") <* P.char ']'
 
-entry :: P.Parser D.Entry
+entry :: PS.Parser D.Entry
 entry = D.Entry <$> lexeme description <*> lexeme int
 
-parseSection :: (Monoid a) => String -> P.Parser a -> P.Parser a
+parseSection :: (Monoid a) => String -> PS.Parser a -> PS.Parser a
 parseSection name p = (parseLine $ P.string $ "[" ++ name ++ "]")
                         *> (transform <$> parser)
-    where   parser = P.many $ parseLine p
+    where   parser = many $ parseLine p
             transform = foldr1 mappend
 
-monthlyExpence :: P.Parser D.Entries
+monthlyExpence :: PS.Parser D.Entries
 monthlyExpence = D.fromMonthlyExpence . D.MonthlyExpence <$> entry
 
-income :: P.Parser D.Entries
+income :: PS.Parser D.Entries
 income = D.fromIncome . D.Income <$> entry
 
-asset :: P.Parser D.Entries
+asset :: PS.Parser D.Entries
 asset = D.fromAsset . D.Asset <$> entry
 
-projection :: P.Parser D.Entries
+projection :: PS.Parser D.Entries
 projection = D.fromProjection <$> (D.Projection <$> entry 
                                                 <*> lexeme month)
 
-expence :: P.Parser D.Entries
+expence :: PS.Parser D.Entries
 expence = D.fromExpence <$> (exp <$> entry <*> tentativeMonth)
     where exp = \e (t, m) -> D.Expence e m t
 
-debt :: P.Parser D.Entries
+debt :: PS.Parser D.Entries
 debt = D.fromDebt <$> (D.Debt <$> entry <*> pure "creditor" 
                               <*> lexeme month <*> lexeme int)
 
-monthlyExpences :: P.Parser D.Entries
+monthlyExpences :: PS.Parser D.Entries
 monthlyExpences = parseSection "monthly expences" monthlyExpence
 
-incomes :: P.Parser D.Entries
+incomes :: PS.Parser D.Entries
 incomes = parseSection "income" income
 
-assets :: P.Parser D.Entries
+assets :: PS.Parser D.Entries
 assets = parseSection "assets" asset
 
-projections :: P.Parser D.Entries
+projections :: PS.Parser D.Entries
 projections = parseSection "projections" projection
 
-expences :: P.Parser D.Entries
+expences :: PS.Parser D.Entries
 expences = parseSection "expences" expence
 
-debts :: P.Parser D.Entries
+debts :: PS.Parser D.Entries
 debts = parseSection "debt" debt
 
-comment :: P.Parser String
+comment :: PS.Parser String
 comment = P.char '#' *> many (P.noneOf "\n\r") <* newLine
 
-{- fmap flat $ (many section) -}
-file :: P.Parser [D.Entries]
-file = (sequence sections) <* P.eof
-    where   --flat = foldr1 mappend
+file :: PS.Parser D.Entries
+file = fmap flat $ (many section) <* P.eof
+    where   flat = foldr1 mappend
             section = expences <||> monthlyExpences <||> incomes 
                     <||> debts <||> assets <||> projections
-            sections = [expences, monthlyExpences, debts, 
-                        incomes, assets, projections]
---parseFile :: String -> IO (Either P.ParseError D.Entries)
---parseFile = P.parseFromFile file
+
+parseFile :: String -> IO (Either P.ParseError D.Entries)
+parseFile = PS.parseFromFile file
 
