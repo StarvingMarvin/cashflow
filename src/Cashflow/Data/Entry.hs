@@ -2,6 +2,8 @@
 module Cashflow.Data.Entry 
 where
 
+import Data.Monoid
+
 data Month = Jan | Feb | Mar | Apr | May | Jun 
             | Jul | Aug | Sep | Oct | Nov | Dec
     deriving (Show, Read, Eq, Ord, Bounded, Enum)
@@ -48,7 +50,7 @@ data Entries = Entries {
         debtEntries           :: [Debt],
         assetEntries          :: [Asset],
         projectionEntries     :: [Projection]
-    }
+    } deriving (Show)
 
 instance SpecificEntry Expence where
     entry = expenceEntry
@@ -68,24 +70,48 @@ instance SpecificEntry Debt where
 instance SpecificEntry Projection where
     entry = projectionEntry
 
+concatEntries :: Entries -> Entries -> Entries
+concatEntries e1 e2 = Entries e m i d a p
+    where   cat = (\f -> (f e1) ++ (f e2))
+            e = cat expenceEntries
+            m = cat monthlyExpenceEntries
+            i = cat incomeEntries
+            d = cat debtEntries
+            a = cat assetEntries
+            p = cat projectionEntries
+
+instance Monoid Entries where
+    mempty = entries
+    mappend = concatEntries
+
 entrySum :: (SpecificEntry a) => [a] -> Int
 entrySum = foldl (\acc -> (acc +) . entryAmmount . entry) 0
 
 outstandingDebt :: Debt -> Month -> Int
 outstandingDebt d m = div (months * ammount) instalments
-    where ammount       = entryAmmount $ debtEntry d
-          instalments   = debtInstalments d
-          start         = fromEnum $ debtStart d
-          months        = start + instalments - fromEnum m
+    where   ammount       = entryAmmount $ debtEntry d
+            instalments   = debtInstalments d
+            start         = fromEnum $ debtStart d
+            months        = start + instalments - fromEnum m
 
 project :: Entries -> Month -> Month -> Int
 project e start end = net
-    where
-        monthly     = entrySum $ monthlyExpenceEntries e
-        exp         = entrySum $ expenceEntries e
-        inc         = entrySum $ incomeEntries e
-        months      = [start..end]
-        monthCount  = length months
-        debt        = sum $ map (\d -> outstandingDebt d start) $ debtEntries e
-        net         = (inc - monthly) * monthCount - debt
+    where   monthly     = entrySum $ monthlyExpenceEntries e
+            exp         = entrySum $ expenceEntries e
+            inc         = entrySum $ incomeEntries e
+            months      = [start..end]
+            monthCount  = length months
+            debt        = sum $ map (\d -> outstandingDebt d start) 
+                              $ debtEntries e
+            net         = (inc - monthly) * monthCount - debt
+
+entries :: Entries
+entries = Entries [] [] [] [] [] []
+
+fromExpence e           = Entries [e] [] [] [] [] []
+fromMonthlyExpence m    = Entries [] [m] [] [] [] []
+fromIncome i            = Entries [] [] [i] [] [] []
+fromDebt d              = Entries [] [] [] [d] [] []
+fromAsset a             = Entries [] [] [] [] [a] []
+fromProjection  p       = Entries [] [] [] [] [] [p]
 
