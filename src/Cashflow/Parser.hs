@@ -18,13 +18,13 @@ newLine = P.many1 (P.oneOf "\r\n")
 p <||> q = P.try p <|> q
 
 lexeme :: P.Parser a -> P.Parser a
-lexeme p = ws *> p <* ws
+lexeme p = p <* ws
 
 emptyLines :: P.Parser [String]
 emptyLines = many ((P.many1 $ P.oneOf " \r\n") <|> comment)
 
 parseLine :: P.Parser a -> P.Parser a
-parseLine p = emptyLines *> lexeme p <* (newLine <|> comment)
+parseLine p = {- emptyLines *> -} lexeme p <* emptyLines --(newLine <|> comment)
 
 int ::  P.Parser Int
 int = read <$> P.many1 P.digit
@@ -47,7 +47,7 @@ sectionName :: P.Parser String
 sectionName = P.char '[' *> many (P.noneOf "\n\r\t[]#") <* P.char ']'
 
 entry :: P.Parser D.Entry
-entry = D.Entry <$> description <*> lexeme int
+entry = D.Entry <$> lexeme description <*> lexeme int
 
 parseSection :: (Monoid a) => String -> P.Parser a -> P.Parser a
 parseSection name p = (parseLine $ P.string $ "[" ++ name ++ "]")
