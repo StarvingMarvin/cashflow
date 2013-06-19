@@ -1,4 +1,6 @@
 module Cashflow.Parser (
+    P.ParseError,
+    D.Entries,
     parseFile
 ) where
 
