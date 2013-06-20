@@ -58,8 +58,7 @@ collapse = fmap mconcat
 parseWithHeading :: PS.Parser a -> (a -> PS.Parser b) -> PS.Parser [b]
 parseWithHeading heading values = do
         h <- (parseLine heading)
-        let p = values h
-        many $ parseLine p
+        many $ parseLine $ values h
 
 sectionHeading :: String -> PS.Parser String
 sectionHeading name = P.between (P.char '[') (P.char ']') (P.string name)
@@ -119,9 +118,8 @@ comment :: PS.Parser String
 comment = P.char '#' *> many (P.noneOf "\n\r") <* newLine
 
 file :: PS.Parser D.Entries
-file = fmap flat $ (many section) <* P.eof
-    where   flat = foldr1 mappend
-            section = expences <||> monthlyExpences <||> incomes 
+file = collapse $ (many section) <* P.eof
+    where   section = expences <||> monthlyExpences <||> incomes 
                     <||> debts <||> assets <||> projections
 
 parseFile :: String -> IO (Either P.ParseError D.Entries)
