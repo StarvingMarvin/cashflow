@@ -43,20 +43,35 @@ tentativeMonth :: PS.Parser (Bool, D.Month)
 tentativeMonth = P.option (True, D.Dec) $
                     (,) <$> tentative <*> month
 
-description :: PS.Parser String
-description = many (P.noneOf "\n\r\t:#[]") <* P.char ':'
+string :: PS.Parser String
+string = many $ P.noneOf "\n\r\t:#[]()"
 
-sectionName :: PS.Parser String
-sectionName = P.char '[' *> many (P.noneOf "\n\r\t[]#") <* P.char ']'
+description :: PS.Parser String
+description = string <* P.char ':'
 
 entry :: PS.Parser D.Entry
 entry = D.Entry <$> lexeme description <*> lexeme int
 
+collapse :: (Functor f, Monoid a) => f [a] -> f a
+collapse = fmap mconcat
+
+parseWithHeading :: PS.Parser a -> (a -> PS.Parser b) -> PS.Parser [b]
+parseWithHeading heading values = do
+        h <- (parseLine heading)
+        let p = values h
+        many $ parseLine p
+
+sectionHeading :: String -> PS.Parser String
+sectionHeading name = P.between (P.char '[') (P.char ']') (P.string name)
+
 parseSection :: (Monoid a) => String -> PS.Parser a -> PS.Parser a
-parseSection name p = (parseLine $ P.string $ "[" ++ name ++ "]")
-                        *> (transform <$> parser)
-    where   parser = many $ parseLine p
-            transform = foldr1 mappend
+parseSection name = collapse . parseWithHeading (sectionHeading name) . const
+
+groupHeading :: PS.Parser String
+groupHeading = P.between (P.char '(') (P.char ')') string
+
+parseGroup :: (Monoid a) => (String -> PS.Parser a) -> PS.Parser a
+parseGroup = collapse . (parseWithHeading groupHeading)
 
 monthlyExpence :: PS.Parser D.Entries
 monthlyExpence = D.fromMonthlyExpence . D.MonthlyExpence <$> entry
@@ -75,8 +90,8 @@ expence :: PS.Parser D.Entries
 expence = D.fromExpence <$> (exp <$> entry <*> tentativeMonth)
     where exp = \e (t, m) -> D.Expence e m t
 
-debt :: PS.Parser D.Entries
-debt = D.fromDebt <$> (D.Debt <$> entry <*> pure "creditor" 
+debt :: String -> PS.Parser D.Entries
+debt creditor = D.fromDebt <$> (D.Debt <$> entry <*> pure creditor 
                               <*> lexeme month <*> lexeme int)
 
 monthlyExpences :: PS.Parser D.Entries
@@ -94,8 +109,11 @@ projections = parseSection "projections" projection
 expences :: PS.Parser D.Entries
 expences = parseSection "expences" expence
 
+debtGroup :: PS.Parser D.Entries
+debtGroup = parseGroup debt
+
 debts :: PS.Parser D.Entries
-debts = parseSection "debt" debt
+debts = parseSection "debt" debtGroup
 
 comment :: PS.Parser String
 comment = P.char '#' *> many (P.noneOf "\n\r") <* newLine
