@@ -1,29 +1,45 @@
-module Cashflow where
+module Cashflow (
+    module Cashflow.Data
+    , Config
+    , configFrom
+    , configTo
+    , configReports
+    , configInput
+    , defaultConfig
+    , cashflow
+) where
 
-import Control.Applicative
-import Data.Time
-import System.Environment
+import System.IO
 
 import Cashflow.Data 
-import Cashflow.Parser (parseFile)
+import Cashflow.Parser (parse)
 import Cashflow.Report
 
-data Config = Config String
+data Config = Config {
+     configFrom     :: Month
+    ,configTo       :: Month
+    ,configReports  :: [Report]
+    ,configInput    :: Handle
+}
 
 defaultConfig :: Config
-defaultConfig = Config ""
+defaultConfig = Config {
+     configFrom     = Jan
+    ,configTo       = Dec
+    ,configReports  = [sumExpences, sumMonthly, sumIncome, 
+                        sumAssets, sumGroupDebt, projection]
+    ,configInput    = stdin
+}
 
-combineReports :: Report
-combineReports f t e = unlines $ reports <*> pure f <*> pure t <*> pure e
-    where   reports = [sumExpences, sumMonthly, sumIncome, 
-                    sumAssets, sumGroupDebt, projection]
+report :: Config -> Entries -> String
+report c e = combineReports r f t e
+    where   r = configReports c
+            f = configFrom c
+            t = configTo c
 
 cashflow :: Config -> IO ()
 cashflow c = do
-    utc <- getCurrentTime
-    args <- getArgs
-    entries <- parseFile $ head args
-    let day = utctDay utc
-    let month = intToMonth $ (\(_,m,_) -> m)  $ toGregorian day
+    content <- hGetContents $ configInput c
+    let entries = parse content
     case entries of (Left error) -> putStrLn $ show error
-                    (Right ent) -> putStrLn $ combineReports month Dec ent
+                    (Right ent) -> putStrLn $ report c ent

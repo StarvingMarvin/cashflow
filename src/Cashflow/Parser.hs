@@ -1,7 +1,8 @@
 module Cashflow.Parser (
-    P.ParseError,
-    D.Entries,
-    parseFile
+    P.ParseError
+    ,D.Entries
+    ,parseFile
+    ,parse
 ) where
 
 import qualified Text.Parsec as P
@@ -121,4 +122,7 @@ file = collapse $ (many section) <* P.eof
 
 parseFile :: String -> IO (Either P.ParseError D.Entries)
 parseFile = PS.parseFromFile file
+
+parse :: String -> Either P.ParseError D.Entries
+parse s = P.parse file "" s
 
