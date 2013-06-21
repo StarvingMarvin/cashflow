@@ -17,9 +17,6 @@ ws = many (P.oneOf " \t,")
 newLine :: PS.Parser String
 newLine = P.many1 (P.oneOf "\r\n")
 
-(<||>) :: PS.Parser a -> PS.Parser a -> PS.Parser a
-p <||> q = P.try p <|> q
-
 lexeme :: PS.Parser a -> PS.Parser a
 lexeme p = p <* ws
 
@@ -61,7 +58,7 @@ parseWithHeading heading values = do
         many $ parseLine $ values h
 
 sectionHeading :: String -> PS.Parser String
-sectionHeading name = P.between (P.char '[') (P.char ']') (P.string name)
+sectionHeading name = P.try $ P.between (P.char '[') (P.char ']') (P.string name)
 
 parseSection :: (Monoid a) => String -> PS.Parser a -> PS.Parser a
 parseSection name = collapse . parseWithHeading (sectionHeading name) . const
@@ -119,8 +116,8 @@ comment = P.char '#' *> many (P.noneOf "\n\r") <* newLine
 
 file :: PS.Parser D.Entries
 file = collapse $ (many section) <* P.eof
-    where   section = expences <||> monthlyExpences <||> incomes 
-                    <||> debts <||> assets <||> projections
+    where   section = expences <|> monthlyExpences <|> incomes 
+                    <|> debts <|> assets <|> projections
 
 parseFile :: String -> IO (Either P.ParseError D.Entries)
 parseFile = PS.parseFromFile file
