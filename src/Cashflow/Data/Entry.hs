@@ -133,6 +133,9 @@ instance Monoid Entries where
 entrySum :: (SpecificEntry a) => [a] -> Int
 entrySum = foldl (\acc -> (acc +) . entryAmmount . entry) 0
 
+groupDebt :: [Debt] -> [(String, [Debt])]
+groupDebt ds = [("", ds)]
+
 outstandingDebt :: Month -> Debt -> Int
 outstandingDebt m d = if (m <= debtStart d) 
                         then ammount 
