@@ -1,0 +1,21 @@
+[expences]
+one:        100
+two:        200 May
+three:      300 ~Sep
+
+[monthly expences]
+bills:      100
+mortgage:   200
+food:       100
+
+[income]
+me:         5000
+you:        5000
+
+[debt]
+(visa)
+hifi:       1000    Aug 12
+
+[assets]
+savings:    3000
+
