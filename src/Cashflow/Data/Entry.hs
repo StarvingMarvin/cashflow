@@ -3,7 +3,6 @@ module Cashflow.Data.Entry
 where
 
 import Data.Monoid
-import Data.String
 
 data Month = Jan | Feb | Mar | Apr | May | Jun 
             | Jul | Aug | Sep | Oct | Nov | Dec
@@ -117,31 +116,6 @@ concatEntries e1 e2 = Entries e m i d a p
             a = cat assetEntries
             p = cat projectionEntries
 
-instance Monoid Entries where
-    mempty = entries
-    mappend = concatEntries
-
-entrySum :: (SpecificEntry a) => [a] -> Int
-entrySum = foldl (\acc -> (acc +) . entryAmmount . entry) 0
-
-outstandingDebt :: Debt -> Month -> Int
-outstandingDebt d m = div (months * ammount) instalments
-    where   ammount       = entryAmmount $ debtEntry d
-            instalments   = debtInstalments d
-            start         = fromEnum $ debtStart d
-            months        = start + instalments - fromEnum m
-
-project :: Entries -> Month -> Month -> Int
-project e start end = net
-    where   monthly     = entrySum $ monthlyExpenceEntries e
-            exp         = entrySum $ expenceEntries e
-            inc         = entrySum $ incomeEntries e
-            months      = [start..end]
-            monthCount  = length months
-            debt        = sum $ map (\d -> outstandingDebt d start) 
-                              $ debtEntries e
-            net         = (inc - monthly) * monthCount - debt
-
 entries :: Entries
 entries = Entries [] [] [] [] [] []
 
@@ -151,4 +125,61 @@ fromIncome i            = Entries [] [] [i] [] [] []
 fromDebt d              = Entries [] [] [] [d] [] []
 fromAsset a             = Entries [] [] [] [] [a] []
 fromProjection  p       = Entries [] [] [] [] [] [p]
+
+instance Monoid Entries where
+    mempty = entries
+    mappend = concatEntries
+
+entrySum :: (SpecificEntry a) => [a] -> Int
+entrySum = foldl (\acc -> (acc +) . entryAmmount . entry) 0
+
+outstandingDebt :: Month -> Debt -> Int
+outstandingDebt m d = if (m <= debtStart d) 
+                        then ammount 
+                        else div (months * ammount) instalments
+    where   ammount       = entryAmmount $ debtEntry d
+            instalments   = debtInstalments d
+            start         = fromEnum $ debtStart d
+            months        = start + instalments - fromEnum m
+
+debtFromTo :: Month -> Month -> Debt -> Int
+debtFromTo f t d = (outstandingDebt f d) - (outstandingDebt t d)
+
+filterExpences :: Month -> Month -> Bool -> [Expence] -> [Expence]
+filterExpences from to t = 
+        filter (\e -> (expenceMonth e >= from)
+                    && (expenceMonth e <= to)
+                    && (t == expenceTentative e))
+
+spreadTentative :: Month -> Month -> Expence -> Int
+spreadTentative f t e = div (months * ammount) remaining
+    where   ammount     = entryAmmount $ expenceEntry e
+            start       = fromEnum f
+            end         = fromEnum t
+            month       = fromEnum $ expenceMonth e
+            months      = month - start
+            remaining   = start - end
+
+expencesFromTo :: Month -> Month -> [Expence] -> Int
+expencesFromTo f t es = future + tentative + futureTentative
+    where   future          = entrySum $ filterExpences f t False  es
+            tentative       = entrySum $ filterExpences Jan t True es
+            futureTentative = if (t == Dec) then 0 else
+                                sum $ map (spreadTentative f t) 
+                                    $ filterExpences (succ t) Dec True es
+
+expencesFrom :: Month -> [Expence] -> Int
+expencesFrom f = expencesFromTo f Dec
+
+project :: Entries -> Month -> Month -> Int
+project e start end = net
+    where   monthly     = entrySum $ monthlyExpenceEntries e
+            exp         = expencesFromTo start end $ expenceEntries e
+            inc         = entrySum $ incomeEntries e
+            assets      = entrySum $ assetEntries e
+            months      = [start..end]
+            monthCount  = length months
+            debt        = sum $ map (debtFromTo start end) 
+                              $ debtEntries e
+            net         = (inc - monthly) * monthCount + assets - debt - exp
 

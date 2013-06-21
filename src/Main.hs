@@ -9,8 +9,10 @@ main = do
     args <- getArgs
     entries <- P.parseFile $ head args
     let day = T.utctDay utc
+    let month = D.intToMonth $ (\(_,m,_) -> m)  $C.toGregorian day
     case entries of (Left error) -> putStrLn "error"
-                    (Right ent) -> putStrLn $ show ent
-    --putStrLn $ "CashFlow " ++ C.showGregorian day
+                    (Right ent) -> do 
+                        putStrLn $ show ent
+                        putStrLn $ show $ D.project ent month D.Dec
 
 
