@@ -26,7 +26,7 @@ defaultConfig :: Config
 defaultConfig = Config {
      configFrom     = Jan
     ,configTo       = Dec
-    ,configReports  = [sumExpences, sumMonthly, sumIncome, 
+    ,configReports  = [sumExpenses, sumMonthly, sumIncome, 
                         sumAssets, sumGroupDebt, projection]
     ,configInput    = stdin
 }

@@ -17,13 +17,13 @@ class SpecificEntry a where
     entry   :: a -> Entry
 
 
-data Expence = Expence {
-        expenceEntry        :: Entry,
-        expenceMonth        :: Month,
-        expenceTentative    :: Bool
+data Expense = Expense {
+        expenseEntry        :: Entry,
+        expenseMonth        :: Month,
+        expenseTentative    :: Bool
     }
 
-newtype MonthlyExpence = MonthlyExpence { monthlyExpenceEntry :: Entry } 
+newtype MonthlyExpense = MonthlyExpense { monthlyExpenseEntry :: Entry } 
 
 newtype Income = Income { incomeEntry :: Entry }
 
@@ -42,24 +42,27 @@ data Projection = Projection {
     }
 
 data Entries = Entries {
-        expenceEntries        :: [Expence],
-        monthlyExpenceEntries :: [MonthlyExpence],
+        expenseEntries        :: [Expense],
+        monthlyExpenseEntries :: [MonthlyExpense],
         incomeEntries         :: [Income],
         debtEntries           :: [Debt],
         assetEntries          :: [Asset],
         projectionEntries     :: [Projection]
     } 
 
+showLines :: (Show a) => [a] -> String
+showLines = unlines . (map show)
+
 instance Show Entry where
     show e = entryDescription e ++ ": " ++ (show $ entryAmmount e)
 
-instance Show Expence where
-    show e = show (expenceEntry e) ++ " " 
-            ++ (if (expenceTentative e) then "~" else "")
-            ++ (show $ expenceMonth e)
+instance Show Expense where
+    show e = show (expenseEntry e) ++ " " 
+            ++ (if (expenseTentative e) then "~" else "")
+            ++ (show $ expenseMonth e)
 
-instance Show MonthlyExpence where
-    show = show . monthlyExpenceEntry
+instance Show MonthlyExpense where
+    show = show . monthlyExpenseEntry
 
 instance Show Income where
     show = show . incomeEntry
@@ -75,24 +78,24 @@ instance Show Debt where
             ++ (show $ debtStart d) ++ " " ++ (show $ debtInstalments d)
 
 instance Show Entries where
-    show e = "[expences]\n" ++
-             (unlines $ map show $ expenceEntries e)
-             ++ "\n\n[monthly expences]\n" ++
-             (unlines $ map show $ monthlyExpenceEntries e)
+    show e = "[expenses]\n" ++
+             (showLines $ expenseEntries e)
+             ++ "\n\n[monthly expenses]\n" ++
+             (showLines $ monthlyExpenseEntries e)
              ++ "\n\n[debt]\n" ++
-             (unlines $ map show $ debtEntries e)
+             (showLines $ debtEntries e)
              ++ "\n\n[income]\n" ++
-             (unlines $ map show $ incomeEntries e)
+             (showLines $ incomeEntries e)
              ++ "\n\n[assets]\n" ++
-             (unlines $ map show $ assetEntries e)
+             (showLines $ assetEntries e)
              ++ "\n\n[projections]\n" ++
-             (unlines $ map show $ projectionEntries e) ++ "\n"
+             (showLines $ projectionEntries e) ++ "\n"
 
-instance SpecificEntry Expence where
-    entry = expenceEntry
+instance SpecificEntry Expense where
+    entry = expenseEntry
 
-instance SpecificEntry MonthlyExpence where
-    entry = monthlyExpenceEntry
+instance SpecificEntry MonthlyExpense where
+    entry = monthlyExpenseEntry
 
 instance SpecificEntry Income where
     entry = incomeEntry
@@ -109,8 +112,8 @@ instance SpecificEntry Projection where
 concatEntries :: Entries -> Entries -> Entries
 concatEntries e1 e2 = Entries e m i d a p
     where   cat = (\f -> (f e1) ++ (f e2))
-            e = cat expenceEntries
-            m = cat monthlyExpenceEntries
+            e = cat expenseEntries
+            m = cat monthlyExpenseEntries
             i = cat incomeEntries
             d = cat debtEntries
             a = cat assetEntries
@@ -119,8 +122,8 @@ concatEntries e1 e2 = Entries e m i d a p
 entries :: Entries
 entries = Entries [] [] [] [] [] []
 
-fromExpence e           = Entries [e] [] [] [] [] []
-fromMonthlyExpence m    = Entries [] [m] [] [] [] []
+fromExpense e           = Entries [e] [] [] [] [] []
+fromMonthlyExpense m    = Entries [] [m] [] [] [] []
 fromIncome i            = Entries [] [] [i] [] [] []
 fromDebt d              = Entries [] [] [] [d] [] []
 fromAsset a             = Entries [] [] [] [] [a] []
@@ -148,36 +151,36 @@ outstandingDebt m d = if (m <= debtStart d)
 debtFromTo :: Month -> Month -> Debt -> Int
 debtFromTo f t d = (outstandingDebt f d) - (outstandingDebt t d)
 
-filterExpences :: Month -> Month -> Bool -> [Expence] -> [Expence]
-filterExpences from to t = 
-        filter (\e -> (expenceMonth e >= from)
-                    && (expenceMonth e <= to)
-                    && (t == expenceTentative e))
+filterExpenses :: Month -> Month -> Bool -> [Expense] -> [Expense]
+filterExpenses from to t = 
+        filter (\e -> (expenseMonth e >= from)
+                    && (expenseMonth e <= to)
+                    && (t == expenseTentative e))
 
-spreadTentative :: Month -> Month -> Expence -> Int
+spreadTentative :: Month -> Month -> Expense -> Int
 spreadTentative f t e = div (months * ammount) remaining
-    where   ammount     = entryAmmount $ expenceEntry e
+    where   ammount     = entryAmmount $ expenseEntry e
             start       = fromEnum f
             end         = fromEnum t
-            month       = fromEnum $ expenceMonth e
+            month       = fromEnum $ expenseMonth e
             months      = month - start
             remaining   = start - end
 
-expencesFromTo :: Month -> Month -> [Expence] -> Int
-expencesFromTo f t es = future + tentative + futureTentative
-    where   future          = entrySum $ filterExpences f t False  es
-            tentative       = entrySum $ filterExpences Jan t True es
+expensesFromTo :: Month -> Month -> [Expense] -> Int
+expensesFromTo f t es = future + tentative + futureTentative
+    where   future          = entrySum $ filterExpenses f t False  es
+            tentative       = entrySum $ filterExpenses Jan t True es
             futureTentative = if (t == Dec) then 0 else
                                 sum $ map (spreadTentative f t) 
-                                    $ filterExpences (succ t) Dec True es
+                                    $ filterExpenses (succ t) Dec True es
 
-expencesFrom :: Month -> [Expence] -> Int
-expencesFrom f = expencesFromTo f Dec
+expensesFrom :: Month -> [Expense] -> Int
+expensesFrom f = expensesFromTo f Dec
 
 project :: Entries -> Month -> Month -> Int
 project e start end = net
-    where   monthly     = entrySum $ monthlyExpenceEntries e
-            exp         = expencesFromTo start end $ expenceEntries e
+    where   monthly     = entrySum $ monthlyExpenseEntries e
+            exp         = expensesFromTo start end $ expenseEntries e
             inc         = entrySum $ incomeEntries e
             assets      = entrySum $ assetEntries e
             months      = [start..end]

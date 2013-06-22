@@ -10,13 +10,13 @@ type Report = Month -> Month -> Entries -> String
 combineReports :: [Report] -> Report
 combineReports reports f t e = unlines $ reports <*> pure f <*> pure t <*> pure e
 
-sumExpences :: Report
-sumExpences f t e = "[expences]\t\t" ++ 
-        (show $ expencesFromTo f t $ expenceEntries e)
+sumExpenses :: Report
+sumExpenses f t e = "[expenses]\t\t" ++ 
+        (show $ expensesFromTo f t $ expenseEntries e)
 
 sumMonthly :: Report
-sumMonthly _ _ e = "[monthly expences]\t" ++
-        (show $ entrySum $ monthlyExpenceEntries e)
+sumMonthly _ _ e = "[monthly expenses]\t" ++
+        (show $ entrySum $ monthlyExpenseEntries e)
 
 sumIncome :: Report
 sumIncome _ _ e = "[income]\t\t" ++

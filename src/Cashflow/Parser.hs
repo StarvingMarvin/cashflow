@@ -70,8 +70,8 @@ groupHeading = P.between (P.char '(') (P.char ')') string
 parseGroup :: (Monoid a) => (String -> PS.Parser a) -> PS.Parser a
 parseGroup = collapse . (parseWithHeading groupHeading)
 
-monthlyExpence :: PS.Parser D.Entries
-monthlyExpence = D.fromMonthlyExpence . D.MonthlyExpence <$> entry
+monthlyExpense :: PS.Parser D.Entries
+monthlyExpense = D.fromMonthlyExpense . D.MonthlyExpense <$> entry
 
 income :: PS.Parser D.Entries
 income = D.fromIncome . D.Income <$> entry
@@ -83,16 +83,16 @@ projection :: PS.Parser D.Entries
 projection = D.fromProjection <$> (D.Projection <$> entry 
                                                 <*> lexeme month)
 
-expence :: PS.Parser D.Entries
-expence = D.fromExpence <$> (exp <$> entry <*> tentativeMonth)
-    where exp = \e (t, m) -> D.Expence e m t
+expense :: PS.Parser D.Entries
+expense = D.fromExpense <$> (exp <$> entry <*> tentativeMonth)
+    where exp = \e (t, m) -> D.Expense e m t
 
 debt :: String -> PS.Parser D.Entries
 debt creditor = D.fromDebt <$> (D.Debt <$> entry <*> pure creditor 
                               <*> lexeme month <*> lexeme int)
 
-monthlyExpences :: PS.Parser D.Entries
-monthlyExpences = parseSection "monthly expences" monthlyExpence
+monthlyExpenses :: PS.Parser D.Entries
+monthlyExpenses = parseSection "monthly expenses" monthlyExpense
 
 incomes :: PS.Parser D.Entries
 incomes = parseSection "income" income
@@ -103,8 +103,8 @@ assets = parseSection "assets" asset
 projections :: PS.Parser D.Entries
 projections = parseSection "projections" projection
 
-expences :: PS.Parser D.Entries
-expences = parseSection "expences" expence
+expenses :: PS.Parser D.Entries
+expenses = parseSection "expenses" expense
 
 debtGroup :: PS.Parser D.Entries
 debtGroup = parseGroup debt
@@ -117,7 +117,7 @@ comment = P.char '#' *> many (P.noneOf "\n\r") <* newLine
 
 file :: PS.Parser D.Entries
 file = collapse $ (many section) <* P.eof
-    where   section = expences <|> monthlyExpences <|> incomes 
+    where   section = expenses <|> monthlyExpenses <|> incomes 
                     <|> debts <|> assets <|> projections
 
 parseFile :: String -> IO (Either P.ParseError D.Entries)
