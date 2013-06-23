@@ -77,8 +77,8 @@ _description_":" _amount_
 
 example:
 
-   [monthly expenses]
-   Rent:		800
+    [monthly expenses]
+    Rent:		800
 
 ### Debt
 
