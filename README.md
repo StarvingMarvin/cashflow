@@ -1,7 +1,8 @@
 
 # Cashflow
 
-Cashflow is simple command line tool personal finance application.
+Cashflow is simple command line tool personal finance application that helps
+medium term planing.
 
 ## Installation
 
@@ -52,8 +53,7 @@ Examples:
     # as soon as July passes, it will not be taken in account 
     # when calculating estimates
     Summer vacation:	 2000 Jul
-    
-    
+        
     # Car will probably be bought some time by the end of May
     # for the purpose of estimates expense is split equally from current 
     # month to May. When May passes, full amount is taken as expense.
@@ -66,10 +66,7 @@ Examples:
     # or planed. For the purpose of calculation it behaves same as ~Dec.
     
     Stereo:		 1500
-    
-    
 
-Tilda means approximately and those records, for purpose of estimation are
 
 ### Monthly expenses
 
@@ -113,7 +110,7 @@ _description_":" _amount_
 
 Cashflow is designed not for absolute precision, but for answering questions 
 like 'is this kind of spending realistic?' To keep overhead at minimum, 
-numerous simplifying assumptions are introduced:
+several simplifying assumptions are introduced:
 
 * Month is the finest time resolution available, and it is also the coarsest
 * If is recurring on period different than month, you need to sum it 
