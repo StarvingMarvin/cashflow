@@ -3,6 +3,7 @@ module Cashflow.Entry
 where
 
 import Data.Monoid
+import qualified Data.Map as Map
 
 data Month = Jan | Feb | Mar | Apr | May | Jun 
             | Jul | Aug | Sep | Oct | Nov | Dec
@@ -137,13 +138,14 @@ entrySum :: (SpecificEntry a) => [a] -> Int
 entrySum = foldl (\acc -> (acc +) . entryAmount . entry) 0
 
 groupDebt :: [Debt] -> [(String, [Debt])]
-groupDebt ds = [("", ds)]
+groupDebt ds = Map.assocs $ foldl group Map.empty ds
+    where   group m d   = Map.insertWith (++) (debtCreditor d) [d] m
 
 outstandingDebt :: Month -> Debt -> Int
 outstandingDebt m d = if (m <= debtStart d) 
                         then amount 
                         else div (months * amount) instalments
-    where   amount       = entryAmount $ debtEntry d
+    where   amount        = entryAmount $ debtEntry d
             instalments   = debtInstalments d
             start         = fromEnum $ debtStart d
             months        = start + instalments - fromEnum m
@@ -167,12 +169,12 @@ spreadTentative f t e = div (months * amount) remaining
             remaining   = end - start
 
 expensesFromTo :: Month -> Month -> [Expense] -> Int
-expensesFromTo f t es = future + tentative + futureTentative
+expensesFromTo f t es = future + tentative + futureTentative t
     where   future          = entrySum $ filterExpenses f t False  es
             tentative       = entrySum $ filterExpenses Jan t True es
-            futureTentative = if (t == Dec) then 0 else
-                                sum $ map (spreadTentative f t) 
-                                    $ filterExpenses (succ t) Dec True es
+            futureTentative Dec = 0
+            futureTentative to  = sum $ map (spreadTentative f to) 
+                                    $ filterExpenses (succ to) Dec True es
 
 expensesFrom :: Month -> [Expense] -> Int
 expensesFrom f = expensesFromTo f Dec
