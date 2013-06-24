@@ -8,8 +8,8 @@ data Month = Jan | Feb | Mar | Apr | May | Jun
             | Jul | Aug | Sep | Oct | Nov | Dec
     deriving (Show, Read, Eq, Ord, Bounded, Enum)
 
-intToMonth :: Int -> Month
-intToMonth = toEnum . pred
+monthFromInt :: Int -> Month
+monthFromInt = toEnum . pred
 
 data Entry = Entry {entryDescription :: String, entryAmount :: Int} 
 

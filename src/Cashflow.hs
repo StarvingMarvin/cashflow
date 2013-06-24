@@ -1,5 +1,6 @@
 module Cashflow (
     module Cashflow.Entry
+    , module Cashflow.Report
     , Config
     , configFrom
     , configTo
@@ -27,7 +28,7 @@ defaultConfig = Config {
      configFrom     = Jan
     ,configTo       = Dec
     ,configReports  = [sumExpenses, sumMonthly, sumIncome, 
-                        sumAssets, sumGroupDebt, projection]
+                        sumAssets, sumGroupDebt, estimate]
     ,configInput    = stdin
 }
 
@@ -43,3 +44,4 @@ cashflow c = do
     let entries = parse content
     case entries of (Left error) -> putStrLn $ show error
                     (Right ent) -> putStrLn $ report c ent
+

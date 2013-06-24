@@ -31,6 +31,9 @@ sumGroupDebt _ _ e = "[debt]\n" ++ (unlines $ debtGroups)
     where   debtGroups = map (\(g, ds) -> g ++ ":\t" ++ (show $ entrySum ds))
                     $ groupDebt $ debtEntries e
 
-projection :: Report
-projection f t e = "Total in " ++ (show t) ++ ": " ++ (show $ project e f t)
+estimate :: Report
+estimate f t e = "Total in " ++ (show t) ++ ": " ++ (show $ project e f t)
+
+yearEnd :: Report
+yearEnd f t e = "year-end"
         
