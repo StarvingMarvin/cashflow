@@ -11,7 +11,7 @@ data Month = Jan | Feb | Mar | Apr | May | Jun
 intToMonth :: Int -> Month
 intToMonth = toEnum . pred
 
-data Entry = Entry {entryDescription :: String, entryAmmount :: Int} 
+data Entry = Entry {entryDescription :: String, entryAmount :: Int} 
 
 class SpecificEntry a where
     entry   :: a -> Entry
@@ -54,7 +54,7 @@ showLines :: (Show a) => [a] -> String
 showLines = unlines . (map show)
 
 instance Show Entry where
-    show e = entryDescription e ++ ": " ++ (show $ entryAmmount e)
+    show e = entryDescription e ++ ": " ++ (show $ entryAmount e)
 
 instance Show Expense where
     show e = show (expenseEntry e) ++ " " 
@@ -134,16 +134,16 @@ instance Monoid Entries where
     mappend = concatEntries
 
 entrySum :: (SpecificEntry a) => [a] -> Int
-entrySum = foldl (\acc -> (acc +) . entryAmmount . entry) 0
+entrySum = foldl (\acc -> (acc +) . entryAmount . entry) 0
 
 groupDebt :: [Debt] -> [(String, [Debt])]
 groupDebt ds = [("", ds)]
 
 outstandingDebt :: Month -> Debt -> Int
 outstandingDebt m d = if (m <= debtStart d) 
-                        then ammount 
-                        else div (months * ammount) instalments
-    where   ammount       = entryAmmount $ debtEntry d
+                        then amount 
+                        else div (months * amount) instalments
+    where   amount       = entryAmount $ debtEntry d
             instalments   = debtInstalments d
             start         = fromEnum $ debtStart d
             months        = start + instalments - fromEnum m
@@ -158,8 +158,8 @@ filterExpenses from to t =
                     && (t == expenseTentative e))
 
 spreadTentative :: Month -> Month -> Expense -> Int
-spreadTentative f t e = div (months * ammount) remaining
-    where   ammount     = entryAmmount $ expenseEntry e
+spreadTentative f t e = div (months * amount) remaining
+    where   amount     = entryAmount $ expenseEntry e
             start       = fromEnum f
             end         = fromEnum t
             month       = fromEnum $ expenseMonth e
