@@ -1,5 +1,5 @@
 
-module Cashflow.Data.Entry 
+module Cashflow.Entry 
 where
 
 import Data.Monoid

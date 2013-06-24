@@ -1,5 +1,5 @@
 module Cashflow (
-    module Cashflow.Data
+    module Cashflow.Entry
     , Config
     , configFrom
     , configTo
@@ -11,7 +11,7 @@ module Cashflow (
 
 import System.IO
 
-import Cashflow.Data 
+import Cashflow.Entry 
 import Cashflow.Parser (parse)
 import Cashflow.Report
 

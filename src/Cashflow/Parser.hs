@@ -10,7 +10,7 @@ import qualified Text.Parsec.String as PS
 import Control.Applicative 
 import Data.Monoid
 
-import qualified Cashflow.Data as D
+import qualified Cashflow.Entry as D
 
 ws :: PS.Parser String
 ws = many (P.oneOf " \t,")

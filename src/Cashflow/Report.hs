@@ -3,7 +3,7 @@ where
 
 import Control.Applicative
 
-import Cashflow.Data
+import Cashflow.Entry
 
 type Report = Month -> Month -> Entries -> String
 
