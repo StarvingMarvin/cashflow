@@ -159,12 +159,12 @@ filterExpenses from to t =
 
 spreadTentative :: Month -> Month -> Expense -> Int
 spreadTentative f t e = div (months * amount) remaining
-    where   amount     = entryAmount $ expenseEntry e
+    where   amount      = entryAmount $ expenseEntry e
             start       = fromEnum f
             end         = fromEnum t
             month       = fromEnum $ expenseMonth e
             months      = month - start
-            remaining   = start - end
+            remaining   = end - start
 
 expensesFromTo :: Month -> Month -> [Expense] -> Int
 expensesFromTo f t es = future + tentative + futureTentative
