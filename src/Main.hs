@@ -3,6 +3,7 @@ import Cashflow
 import Data.Time
 import System.Console.GetOpt
 import System.Environment
+import System.Exit
 import System.IO
 
 
@@ -32,12 +33,25 @@ applyFlag :: Config -> Flag -> Config
 applyFlag c (From m)    = c {configFrom=m}
 applyFlag c (To m)      = c {configTo=m}
 applyFlag c YearEnd     = c {configReports=[yearEnd]}
+applyFlag c Help        = c
 
+
+getUsage :: IO String
+getUsage = do
+    progName <- getProgName
+    let header = "Usage: " ++ progName ++ " [OPTIONS...] file"
+    return $ usageInfo header options
+
+help :: [Flag] -> IO ()
+help [] = return ()
+help (Help:_) = getUsage >>= putStrLn >> exitWith ExitSuccess
+help (f:fs) = help fs
 
 handleOpts :: [Flag] -> [String] -> IO Config
 handleOpts fs o = do
     currentMonth <- getCurrentMonth
     handle <- getHandle o
+    help fs
     let config = defaultConfig {configFrom=currentMonth, configInput=handle}
     return $ foldl applyFlag config fs
 
@@ -45,13 +59,11 @@ handleOpts fs o = do
 getConfig :: IO Config
 getConfig = do
     args <- getArgs
-    progName <- getProgName
+    usage <- getUsage
     let opts = getOpt Permute options args
     case opts of
         (fs, o, []) -> handleOpts fs o
-        (_, _, errs) -> ioError (userError 
-            (concat errs ++ usageInfo header options))
-         where header = "Usage: " ++ progName ++ " [OPTIONS...] file"
+        (_, _, errs) -> ioError (userError (concat errs ++ usage))
 
 main :: IO ()
 main = do
