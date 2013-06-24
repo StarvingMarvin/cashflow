@@ -45,7 +45,7 @@ string :: PS.Parser String
 string = many $ P.noneOf "\n\r\t:#[]()"
 
 description :: PS.Parser String
-description = string <* P.char ':'
+description = ws *> string <* P.char ':'
 
 entry :: PS.Parser D.Entry
 entry = D.Entry <$> lexeme description <*> lexeme int
@@ -116,7 +116,7 @@ comment :: PS.Parser String
 comment = P.char '#' *> many (P.noneOf "\n\r") <* newLine
 
 file :: PS.Parser D.Entries
-file = collapse $ (many section) <* P.eof
+file = emptyLines *> (collapse $ many section) <* P.eof
     where   section = expenses <|> monthlyExpenses <|> incomes 
                     <|> debts <|> assets <|> projections
 
