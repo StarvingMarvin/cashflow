@@ -1,23 +1,37 @@
-[expences]
-one:        100
-vacation:   1000 Jul
-laptop:     1000 ~Nov
+[expenses]
+# Summer vacation is planed and exact time is known
+# as soon as July passes, it will not be taken in account 
+# when calculating estimates
+Summer vacation:	 2000 Jul
+    
+# Car will probably be bought some time by the end of May
+# for the purpose of estimates expense is split equally from current 
+# month to May. When May passes, full amount is taken as expense.
+# When car is finally bought, you will either remove it from list, or
+# set exact month so that it stops being taken into account.
+car:		 6000 ~May
+
+# After some poking around the Internet, testing couple of devices etc.
+# you will go out and actually by a stereo, but no exact date is known 
+# or planed. For the purpose of calculation it behaves same as ~Dec.
+
+Stereo:		 1500
 
 [monthly expences]
-bills:      200
-mortgage:   600
-food:       300
-clothes:    300
-car:        200
-other:      200
+bills:      300
+rent:       800
 
 [income]
-me:         5000
-you:        5000
+allice:     6000
+bob:        5000
 
 [debt]
-(visa)
-hifi:       1000    Mar 12
+(bank x visa)
+item 1:		500 Apr 10
+item 2:		700 Jun 12
+
+(bank y master)
+item 3:		300 Mar 3
 
 [assets]
 savings:    3000
