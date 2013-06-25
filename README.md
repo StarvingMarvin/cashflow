@@ -6,9 +6,9 @@ medium term planing.
 
 ## Installation
 
-Only two dependencies beside `base` are `time` and `parsec`, and they are 
-both part of `haskell-platform`, so if you have `haskell-platform` installed,
-you should be good to go.
+It has three dependencies beside `base`: `time`, `parsec` and `containers`, 
+and they are both part of `haskell-platform`, so if you have `haskell-platform` 
+installed, you should be good to go.
 
 Check out source
 
@@ -23,11 +23,20 @@ Build
 
 ## Usage
 
-Program takes input file as parameter
+At its simplest, program takes input file as parameter
 
     > cashflow input-file
     
-if none given, stdin is read.
+if no file given, stdin is read.
+
+Here is full list of potions:
+
+    -s MONTH  --start-month=MONTH  Starting month for estimate. Defaults to current month.
+    -e MONTH  --end-month=MONTH    Ending month for estimate. Defaults to Dec
+    -y        --year-end           Generates seed for next year file using data from current year
+    -h        --help               Prints this help message
+
+Where MONTH is in same format as in input file that is `Jan` to `Dec`
 
 ## Input format
 

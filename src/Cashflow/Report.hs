@@ -2,6 +2,7 @@ module Cashflow.Report
 where
 
 import Control.Applicative
+import Data.Maybe
 
 import Cashflow.Entry
 
@@ -35,5 +36,13 @@ estimate :: Report
 estimate f t e = "Total in " ++ (show t) ++ ": " ++ (show $ project e f t)
 
 yearEnd :: Report
-yearEnd f t e = "year-end"
-        
+yearEnd f t e = unlines [monthly, income, assets, debt t] 
+    where   copy h f    = h ++ "\n" ++ (unlines $ map show $ f e)
+            monthly     = copy "[monthly expenses]" monthlyExpenseEntries
+            income      = copy "[income]" incomeEntries
+            assets      = (copy "[assets]" assetEntries)
+                ++ "year end estimate: " ++ (show $ project e f t) ++ "\n"
+            ds to       = groupDebt $ mapMaybe (debtDrop to) $ debtEntries e
+            debt Dec    = "[debt]\n"
+            debt to     = "[debt]\n"
+

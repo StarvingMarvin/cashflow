@@ -131,11 +131,20 @@ fromAsset a             = Entries [] [] [] [] [a] []
 fromProjection  p       = Entries [] [] [] [] [] [p]
 
 instance Monoid Entries where
-    mempty = entries
+    mempty  = entries
     mappend = concatEntries
 
 entrySum :: (SpecificEntry a) => [a] -> Int
 entrySum = foldl (\acc -> (acc +) . entryAmount . entry) 0
+
+debtDrop :: Month -> Debt -> Maybe Debt
+debtDrop m d = if endsBefore then Nothing
+                else Just remaining
+    where   start       = fromEnum $ debtStart d
+            month       = fromEnum m
+            endsBefore  = start + debtInstalments d < month
+            entry       = (debtEntry d) {entryAmount=outstandingDebt m d}
+            remaining   = Debt entry (debtCreditor d) m (month - start)
 
 groupDebt :: [Debt] -> [(String, [Debt])]
 groupDebt ds = Map.assocs $ foldl group Map.empty ds

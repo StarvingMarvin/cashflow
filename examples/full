@@ -22,7 +22,7 @@ bills:      300
 rent:       800
 
 [income]
-allice:     6000
+alice:      6000
 bob:        5000
 
 [debt]
