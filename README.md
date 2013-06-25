@@ -5,8 +5,8 @@ medium term planing.
 
 ## Installation
 
-It has three dependencies beside standard libabry: `time`, `parsec` and `containers`, 
-and they are all part of `haskell-platform`, so if you have `haskell-platform` 
+It has three dependencies beside standard library: `time`, `parsec` and `containers`, 
+and they are all part of haskell platform, so if you have haskell platform 
 installed, you should be good to go.
 
 Check out source
