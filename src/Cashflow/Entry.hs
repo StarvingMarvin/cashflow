@@ -142,9 +142,12 @@ debtDrop m d = if endsBefore then Nothing
                 else Just remaining
     where   start       = fromEnum $ debtStart d
             month       = fromEnum m
-            endsBefore  = start + debtInstalments d < month
+            end         = start + debtInstalments d
+            endsBefore  = end < month
             entry       = (debtEntry d) {entryAmount=outstandingDebt m d}
-            remaining   = Debt entry (debtCreditor d) m (month - start)
+            next Dec    = Jan
+            next mnth   = succ mnth
+            remaining   = Debt entry (debtCreditor d) (next m) (end - month)
 
 groupDebt :: [Debt] -> [(String, [Debt])]
 groupDebt ds = Map.assocs $ foldl group Map.empty ds

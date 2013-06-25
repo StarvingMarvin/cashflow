@@ -36,13 +36,16 @@ estimate :: Report
 estimate f t e = "Total in " ++ (show t) ++ ": " ++ (show $ project e f t)
 
 yearEnd :: Report
-yearEnd f t e = unlines [monthly, income, assets, debt t] 
+yearEnd f t e = unlines [monthly, income, assets, debt] 
     where   copy h f    = h ++ "\n" ++ (unlines $ map show $ f e)
             monthly     = copy "[monthly expenses]" monthlyExpenseEntries
             income      = copy "[income]" incomeEntries
             assets      = (copy "[assets]" assetEntries)
                 ++ "year end estimate: " ++ (show $ project e f t) ++ "\n"
-            ds to       = groupDebt $ mapMaybe (debtDrop to) $ debtEntries e
-            debt Dec    = "[debt]\n"
-            debt to     = "[debt]\n"
+            groups      = groupDebt $ mapMaybe (debtDrop t) $ debtEntries e
+            showDebt d  = (show $ debtEntry d) ++ " " ++ (show $ debtStart d)
+                ++ " " ++ (show $ debtInstalments d) 
+            showGroup (g, ds) = 
+                "(" ++ g ++ ")\n" ++ (unlines $ map showDebt ds)
+            debt        = "[debt]\n" ++ (unlines $ map showGroup groups)
 
