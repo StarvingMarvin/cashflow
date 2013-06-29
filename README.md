@@ -1,4 +1,3 @@
-
 # Cashflow
 
 Cashflow is simple command line tool personal finance application that helps
@@ -6,8 +5,8 @@ medium term planing.
 
 ## Installation
 
-It has three dependencies beside `base`: `time`, `parsec` and `containers`, 
-and they are both part of `haskell-platform`, so if you have `haskell-platform` 
+It has three dependencies beside standard library: `time`, `parsec` and `containers`, 
+and they are all part of haskell platform, so if you have haskell platform 
 installed, you should be good to go.
 
 Check out source
@@ -68,7 +67,7 @@ Examples:
     # month to May. When May passes, full amount is taken as expense.
     # When car is finally bought, you will either remove it from list, or
     # set exact month so that it stops being taken into account.
-    car:		 6000 ~May
+    Car:		 6000 ~May
     
     # After some poking around the Internet, testing couple of devices etc.
     # you will go out and actually by a stereo, but no exact date is known 
@@ -137,7 +136,9 @@ turning it into debt", or "I am putting $X monthly on my savings account"
 There is also no notion of one-of income. I could probably make it by adding 
 optional month on asset record, or something...
 
-## How it relates to ledger?
+##FAQ
+
+### How it relates to ledger?
 
 [Ledger](http://ledger-cli.org/) is an awesome tool that helps you track 
 your finances and precisely track where your money is going. Once you figure
@@ -146,7 +147,7 @@ you do a back of a napkin sort of calculation to help you plan your future
 expenses.
 
 
-## How stable, tested, etc this software is?
+### How stable, tested, etc this software is?
 
 This is my first Haskell project, and it's made in a week or so, draw
 your own conclusions.
