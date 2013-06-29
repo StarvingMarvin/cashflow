@@ -40,8 +40,8 @@ yearEnd f t e = unlines [monthly, income, assets, debt]
     where   copy h f    = h ++ "\n" ++ (unlines $ map show $ f e)
             monthly     = copy "[monthly expenses]" monthlyExpenseEntries
             income      = copy "[income]" incomeEntries
-            assets      = (copy "[assets]" assetEntries)
-                ++ "year end estimate: " ++ (show $ project e f t) ++ "\n"
+            assets      = "[assets]\nyear end estimate: "
+                ++ (show $ project e f t) ++ "\n"
             groups      = groupDebt $ mapMaybe (debtDrop t) $ debtEntries e
             showDebt d  = (show $ debtEntry d) ++ " " ++ (show $ debtStart d)
                 ++ " " ++ (show $ debtInstalments d) 
