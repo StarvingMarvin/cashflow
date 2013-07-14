@@ -32,6 +32,12 @@ sumGroupDebt _ _ e = "[debt]\n" ++ (unlines $ debtGroups)
     where   debtGroups = map (\(g, ds) -> g ++ ":\t" ++ (show $ entrySum ds))
                     $ groupDebt $ debtEntries e
 
+outstandingGroupDebt :: Report
+outstandingGroupDebt f _ e = "[debt]\n" ++ (unlines $ map showGroup groups)
+    where   groups      = groupDebt $ mapMaybe (debtDrop f) $ debtEntries e
+            showGroup (g, ds) = 
+                "(" ++ g ++ ")\t" ++ (show $ entrySum ds)
+
 estimate :: Report
 estimate f t e = "Total in " ++ (show t) ++ ": " ++ (show $ project e f t)
 

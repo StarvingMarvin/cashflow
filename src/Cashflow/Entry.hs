@@ -154,9 +154,10 @@ groupDebt ds = Map.assocs $ foldl group Map.empty ds
     where   group m d   = Map.insertWith (++) (debtCreditor d) [d] m
 
 outstandingDebt :: Month -> Debt -> Int
-outstandingDebt m d = if (m <= debtStart d) 
-                        then amount 
-                        else div (months * amount) instalments
+outstandingDebt m d 
+        | m <= debtStart d  = amount
+        | months <= 0       = 0
+        | otherwise         = div (months * amount) instalments
     where   amount        = entryAmount $ debtEntry d
             instalments   = debtInstalments d
             start         = fromEnum $ debtStart d

@@ -28,7 +28,7 @@ defaultConfig = Config {
      configFrom     = Jan
     ,configTo       = Dec
     ,configReports  = [sumExpenses, sumMonthly, sumIncome, 
-                        sumAssets, sumGroupDebt, estimate]
+                        sumAssets, outstandingGroupDebt, estimate]
     ,configInput    = stdin
 }
 
