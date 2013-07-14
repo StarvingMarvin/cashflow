@@ -173,7 +173,7 @@ filterExpenses from to t =
                     && (t == expenseTentative e))
 
 spreadTentative :: Month -> Month -> Expense -> Int
-spreadTentative f t e = div (months * amount) remaining
+spreadTentative f t e = div (remaining * amount) months
     where   amount      = entryAmount $ expenseEntry e
             start       = fromEnum f
             end         = fromEnum t
